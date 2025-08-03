@@ -6,8 +6,8 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y openssh-server
 
 # Create user and set password for user and root user
-RUN  useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 ubuntu && \
-    echo 'ubuntu:secret_password' | chpasswd && \
+RUN  useradd -rm -d /home/ubuntu1 -s /bin/bash -g root -G sudo -u 1000 ubuntu && \
+    echo 'ubuntu1:secret_password' | chpasswd && \
     echo 'root:secret_password' | chpasswd
 
 # Set up configuration for SSH
