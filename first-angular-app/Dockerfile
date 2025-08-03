@@ -1,30 +1,23 @@
-# Stage 1: Build the Angular application
-FROM node:latest as build
-WORKDIR /usr/src/app
-COPY package.json package-lock.json ./
-RUN npm install
-COPY . .
-RUN npm run build
+# Use the official image as a parent image
+FROM ubuntu
 
-# Stage 2: Serve the application with Nginx
-FROM nginx:latest
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY --from=build /usr/src/app/dist/first-angular-app /usr/share/nginx/html
-
-# Install OpenSSH server
-RUN apt-get update && apt-get install -y openssh-server
+# Update the system, install OpenSSH Server, and set up users
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y openssh-server
 
 # Create user and set password for user and root user
 RUN  useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 ubuntu && \
     echo 'ubuntu:secret_password' | chpasswd && \
     echo 'root:secret_password' | chpasswd
-	
-# Create a directory for SSH, if it doesn't exist
-RUN mkdir -p /var/run/sshd
+
+# Set up configuration for SSH
+RUN mkdir /var/run/sshd && \
+    sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
+    echo "export VISIBLE=now" >> /etc/profile
 
 # Expose the SSH port
 EXPOSE 22
 
-# Start the SSH server when the container runs
-# This example uses a simple startup script; consider a more robust entrypoint script for production
+# Run SSH
 CMD ["/usr/sbin/sshd", "-D"]
