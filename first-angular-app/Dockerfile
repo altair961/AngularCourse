@@ -10,3 +10,16 @@ RUN npm run build
 FROM nginx:latest
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY --from=build /usr/src/app/dist/first-angular-app /usr/share/nginx/html
+
+# Install OpenSSH server
+RUN apt-get update && apt-get install -y openssh-server
+
+# Create a directory for SSH, if it doesn't exist
+RUN mkdir -p /var/run/sshd
+
+# Expose the SSH port
+EXPOSE 22
+
+# Start the SSH server when the container runs
+# This example uses a simple startup script; consider a more robust entrypoint script for production
+CMD ["/usr/sbin/sshd", "-D"]
